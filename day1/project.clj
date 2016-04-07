@@ -6,4 +6,6 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [thi.ng/geom "0.0.1146-SNAPSHOT"]
                  [org.jogamp.gluegen/gluegen-rt "2.3.2" :classifier "natives-macosx-universal"]
-                 [org.jogamp.jogl/jogl-all "2.3.2" :classifier "natives-macosx-universal"]])
+                 [org.jogamp.jogl/jogl-all "2.3.2" :classifier "natives-macosx-universal"]]
+  :aot [ws-ldn-6.ex06]
+  :main ws-ldn-6.ex06)

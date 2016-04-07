@@ -1,4 +1,5 @@
 (ns ws-ldn-6.ex06
+  (:gen-class)
   (:import
    [com.jogamp.opengl GL3 GLAutoDrawable]
    [com.jogamp.newt.event MouseEvent KeyEvent])
@@ -13,6 +14,7 @@
    [thi.ng.geom.gl.shaders :as sh]
    [thi.ng.geom.gl.jogl.core :as jogl]
    [thi.ng.geom.gl.jogl.constants :as glc]
+   [clojure.java.io :as io]
    [clojure.string :as str]))
 
 (def app
@@ -45,7 +47,7 @@ void main() {
 
 (defn prepare-example
   [id]
-  (let [code (slurp (str "resources/shader/" (name id) ".frag"))]
+  (let [code (slurp (io/resource (str "shader/" (name id) ".frag")))]
     (update shader-spec :fs str/replace "{{user-code}}" code)))
 
 (defn init
