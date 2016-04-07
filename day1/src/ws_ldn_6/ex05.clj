@@ -95,6 +95,7 @@
       (gl/clear-color-and-depth-buffer (col/hsva 0 0 0.3) 1)
       (gl/draw-with-shader (assoc-in model [:uniforms :model] (arc/get-view arcball))))
     (gl/unbind (:fbo src-fbo))
+    (gl/clear-color-and-depth-buffer gl col/BLACK 1)
     (fx/execute-pipeline gl fx-pipe)
     (loop [y 0, thumbs thumbs]
       (when thumbs
@@ -112,7 +113,7 @@
   [_ x y w h]
   (swap! app
          #(-> %
-              (assoc-in [:model :uniforms :proj] (mat/perspective 45 (/ w h) 0.1 10))
+              (assoc-in [:model :uniforms :proj] (mat/perspective 45 1.7777 0.1 10))
               (assoc :width w :height h)
               (update :arcball arc/resize w h))))
 
