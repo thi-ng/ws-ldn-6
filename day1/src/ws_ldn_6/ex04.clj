@@ -50,21 +50,32 @@
                                :diffuseCol  [0.1 0.5 0.6]
                                :specularCol [0.8 0.3 0.3]})
                       (assoc :shader shader)
-                      (gl/make-buffers-in-spec gl glc/static-draw))]
+                      (gl/make-buffers-in-spec gl glc/static-draw))
+        model2   (-> model
+                     (assoc-in [:uniforms :diffuseCol] [1 0 0]))]
     (swap! app assoc
            :model     model
+           :model2    model2
            :wireframe false
            :arcball   (arc/arcball {:init (m/normalize (q/quat 0.0 0.707 0.707 0))}))))
 
 (defn display
   [^GLAutoDrawable drawable t]
   (let [^GL3 gl (.. drawable getGL getGL3)
-        {:keys [model wireframe arcball]} @app
+        {:keys [model model2 wireframe arcball]} @app
         view    (arc/get-view arcball)]
     (doto gl
       (gl/clear-color-and-depth-buffer col/GRAY 1)
       (.glPolygonMode glc/front-and-back (if wireframe glc/line glc/fill))
-      (gl/draw-with-shader (assoc-in model [:uniforms :model] view)))))
+      (gl/draw-with-shader
+       (update model :uniforms merge
+               {:view view
+                :model (g/translate mat/M44 (mod t 1.0) 0 0)}))
+      (gl/draw-with-shader
+       (update model2 :uniforms merge
+               {:view view
+                :model (g/translate mat/M44 (- (mod t 1.0)) 0 0)}))
+      )))
 
 (defn resize
   [_ x y w h]
