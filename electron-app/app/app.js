@@ -101,7 +101,7 @@ const browserWindowOptions = {
 
 const ipcMain = require('electron').ipcMain;
 ipcMain.on('bounce-dock', function(event, arg) {
-  app.dock.bounce();
+    app.dock.bounce(arg);
 });
 
 ipcMain.on('set-badge', function(event, arg) {

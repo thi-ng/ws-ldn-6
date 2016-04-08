@@ -5,12 +5,20 @@
   (:require
    [ws-ldn-6.app :as app]
    [thi.ng.geom.gl.webgl.animator :as anim]
-   [reagent.core :as r]))
+   [reagent.core :as r]
+   [cljsjs.codemirror :as cm]
+   [cljsjs.codemirror.addon.edit.matchbrackets]
+   [cljsjs.codemirror.addon.edit.closebrackets]
+   [cljsjs.codemirror.addon.selection.active-line]
+   [cljsjs.codemirror.mode.clojure]
+   [cljsjs.codemirror.mode.clike]
+   ))
 
 (defonce app (r/atom {}))
 
 (def fs (js/require "fs"))
 (def ipc (.-ipcRenderer (js/require "electron")))
+(def shell (js/require "shelljs"))
 
 (comment
   (.writeFile fs "./cljs-file-output.txt" "Hello File system!"))
@@ -40,10 +48,22 @@
    fs path
    (fn [err body]
      (swap! app assoc :curr-file
-            {:path path
-             :body (if err
-                     "error loading file"
-                     (.toString body "utf-8"))}))))
+            {:path      path
+             :edit-mode (if (re-find #"\.(edn|clj[cs]?)$" path) "text/x-clojure" "text/x-squirrel")
+             :body      (if err
+                          "error loading file"
+                          (.toString body "utf-8"))}))))
+
+(defn update-editor-body
+  [body]
+  (swap! app assoc-in [:curr-file :body] body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn dir-header
+  []
+  (let [dir (reaction (-> @app :dir :root))]
+    [:div "TODO header"]))
 
 (defn file-list
   []
@@ -52,32 +72,71 @@
       (if (seq @files)
         [:ul
          (doall
-          (for [{:keys [name path dir?]} @files]
-            [:li {:key path}
-             (if dir?
-               [:a {:href "#" :on-click #(set-dir-root! path)} name]
-               [:a {:href "#" :on-click #(set-curr-file! path)} name])]))]))))
+          (for [{:keys [name path dir?]} @files
+                ;;:when dir?
+                ;;:while (re-find #"^[\.a-e]" name)
+                :let [handler (if dir? #(set-dir-root! path) #(set-curr-file! path))]]
+            [:li {:key path} [:a {:href "#" :on-click handler} name]]))]))))
+
+(defn cm-editor
+  "CodeMirror react component wrapper. Takes map of component props
+  and map of CM config opts. Props map MUST include an :on-change
+  handler and a :state value, which must be dereferencable (atom or
+  reaction)."
+  [props cm-opts]
+  (r/create-class
+   {:component-did-mount
+    (fn [this]
+      (let [editor (.fromTextArea js/CodeMirror (r/dom-node this) (clj->js cm-opts))]
+        (.on editor "change" #((:on-change props) (.getValue %)))
+        (r/set-state this {:editor editor})))
+
+    :should-component-update
+    (fn [this]
+      (let [editor  (:editor (r/state this))
+            val     (:body @(:state props))
+            update? (not= val (.getValue editor))]
+        (when update?
+          (.setOption editor "mode" (:edit-mode @(:state props)))
+          (.setValue editor val))
+        update?))
+    
+    :reagent-render
+    (fn [_] [:textarea {:default-value (:default-value props)}])}))
 
 (defn editor
   []
-  (let [curr (reaction (:curr-file @app))]
+  (let [curr (reaction (:curr-file @app))
+        body (reaction (-> @app :curr-file :body))]
     (fn []
       [:div
-       [:h3 "Editor area" (if @curr [:small (:path @curr)])]
-       [:textarea {:cols 120 :rows 25 :read-only true :value (:body @curr)}]])))
+       [:h3 "Editor area " (if @curr [:small (:path @curr)])]
+       [cm-editor
+        {:on-change     update-editor-body
+         :default-value @body
+         :state         curr}
+        {:mode              (:edit-mode @curr)
+         :theme             "material"
+         :matchBrackets     true
+         :autoCloseBrackets true
+         :styleActiveLine   true
+         :lineNumbers       true
+         :autofocus         true}]])))
 
 (defn app-component
   []
   [:div.container-fluid
    [:h1 "WS-LDN-6"]
    [:div.row
-    [:div.col-md-3 [file-list]]
+    [:div.col-md-3
+     [dir-header]
+     [file-list]]
     [:div.col-md-9 [editor]]]])
 
 (defn mount-root
   []
-  (js/Notification. (str (js/Date.)) #js {:body "Reloaded"})
-  (.send ipc "bounce-dock")
+  (js/Notification. (str (js/Date.)) (clj->js {:body (str "Hello " "people")}))
+  (.send ipc "bounce-dock" "critical")
   (r/render-component [app-component] (.getElementById js/document "app")))
 
 (defn init!
