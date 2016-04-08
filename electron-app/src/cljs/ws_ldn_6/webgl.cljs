@@ -1,5 +1,6 @@
 (ns ws-ldn-6.webgl
   (:require
+   [reagent.core :as r]
    [thi.ng.geom.core :as g]
    [thi.ng.geom.vector :as v]
    [thi.ng.geom.matrix :as mat]
@@ -8,6 +9,9 @@
    [thi.ng.geom.gl.shaders :as sh]
    [thi.ng.geom.gl.webgl.constants :as glc]
    [thi.ng.typedarrays.core :as ta]))
+
+(def dummy-shader
+  "void mainImage(vec2 pos, vec2 aspect) { gl_FragColor = vec4(0.0,0.0,0.0, 1.0); }")
 
 (def shader-spec
   {:vs "void main(){vUV=uv;gl_Position=model*vec4(position,0.0,1.0);}"
@@ -37,3 +41,20 @@
    :uniforms     {:tex 0}
    :num-vertices 4
    :mode         glc/triangle-strip})
+
+(defn compile-shader
+  [gl user-code]
+  (let [spec (update shader-spec :fs #(str user-code %))]
+    (sh/make-shader-from-spec gl spec)))
+
+(defn init
+  [component]
+  (let [canvas (r/dom-node component)
+        gl     (gl/gl-context canvas)
+        quad   (-> (init-fx-quad gl)
+                   (assoc :shader (compile-shader gl dummy-shader)))]
+    ))
+
+(defn redraw
+  [component]
+)

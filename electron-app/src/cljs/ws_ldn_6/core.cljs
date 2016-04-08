@@ -3,6 +3,7 @@
    [reagent.ratom :refer [reaction]]
    [cljs-log.core :refer [debug info warn severe]])
   (:require
+   [ws-ldn-6.state :as state]
    [ws-ldn-6.webgl :as gltoy]
    [thi.ng.geom.gl.webgl.animator :as anim]
    [reagent.core :as r]
@@ -14,8 +15,6 @@
    [cljsjs.codemirror.mode.clike]
    ))
 
-(defonce app (r/atom {}))
-
 (def fs (js/require "fs"))
 (def ipc (.-ipcRenderer (js/require "electron")))
 (def shell (js/require "shelljs"))
@@ -23,51 +22,16 @@
 (comment
   (.writeFile fs "./cljs-file-output.txt" "Hello File system!"))
 
-(defn set-dir-root!
-  [root]
-  (let [root (str root "/")]
-    (.readdir
-     fs root
-     (fn [err files]
-       (if-not err
-         (do
-           (swap! app assoc :dir
-                  {:root  root
-                   :files (mapv
-                           (fn [f]
-                             {:name f
-                              :path (str root f)
-                              :dir? (.. fs (lstatSync (str root f)) isDirectory)})
-                           files)})
-           (.send ipc "set-badge" (str (count files))))
-         (warn err))))))
-
-(defn set-curr-file!
-  [path]
-  (.readFile
-   fs path
-   (fn [err body]
-     (swap! app assoc :curr-file
-            {:path      path
-             :edit-mode (if (re-find #"\.(edn|clj[cs]?)$" path) "text/x-clojure" "text/x-squirrel")
-             :body      (if err
-                          "error loading file"
-                          (.toString body "utf-8"))}))))
-
-(defn update-editor-body
-  [body]
-  (swap! app assoc-in [:curr-file :body] body))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn dir-header
   []
-  (let [dir (reaction (-> @app :dir :root))]
+  (let [dir (reaction (-> @state/app :dir :root))]
     [:div "TODO header"]))
 
 (defn file-list
   []
-  (let [files (reaction (-> @app :dir :files))]
+  (let [files (reaction (-> @state/app :dir :files))]
     (fn []
       (if (seq @files)
         [:ul
@@ -75,7 +39,7 @@
           (for [{:keys [name path dir?]} @files
                 ;;:when dir?
                 ;;:while (re-find #"^[\.a-e]" name)
-                :let [handler (if dir? #(set-dir-root! path) #(set-curr-file! path))]]
+                :let [handler (if dir? #(state/set-dir-root! path) #(state/set-curr-file! path))]]
             [:li {:key path} [:a {:href "#" :on-click handler} name]]))]))))
 
 (defn cm-editor
@@ -100,17 +64,17 @@
           (.setOption editor "mode" (:edit-mode @(:state props)))
           (.setValue editor val))
         update?))
-    
+
     :reagent-render
     (fn [_] [:textarea {:default-value (:default-value props)}])}))
 
 (defn editor
   []
-  (let [curr (reaction (:curr-file @app))
-        body (reaction (-> @app :curr-file :body))]
+  (let [curr (reaction (:curr-file @state/app))
+        body (reaction (-> @state/app :curr-file :body))]
     (fn []
       [cm-editor
-       {:on-change     update-editor-body
+       {:on-change     state/update-editor-body
         :default-value @body
         :state         curr}
        {:mode              (:edit-mode @curr)
@@ -170,5 +134,5 @@
 (defn init!
   []
   (.initializeTouchEvents js/React)
-  (set-dir-root! ".")
+  (state/set-dir-root! ".")
   (mount-root))
