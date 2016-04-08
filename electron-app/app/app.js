@@ -60,6 +60,30 @@ var fileMenu = {
   }]
 };
 
+var editMenu = {
+    label: 'Edit',
+    submenu: [{
+        label: 'Cut',
+        accelerator: 'Command+X',
+        selector: 'cut:'
+      },
+      {
+        label: 'Copy',
+        accelerator: 'Command+C',
+        selector: 'copy:'
+      },
+      {
+        label: 'Paste',
+        accelerator: 'Command+V',
+        selector: 'paste:'
+      },
+      {
+        label: 'Select All',
+        accelerator: 'Command+A',
+        selector: 'selectAll:'
+      }]
+};
+
 var helpMenu = {
   label: 'Help',
   submenu: [
@@ -82,7 +106,7 @@ var debugMenu = {
   ]
 };
 
-var menuTemplate = [fileMenu, debugMenu, helpMenu];
+var menuTemplate = [fileMenu, editMenu, debugMenu, helpMenu];
 
 
 // NOTE: not all of the browserWindow options listed on the docs page work
