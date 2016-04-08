@@ -12,7 +12,7 @@
                  [cljsjs/nodejs-externs "1.0.4-1"]
                  [reagent "0.5.1"]
                  [cljsjs/codemirror "5.7.0-3"]
-                 [thi.ng/geom "0.0.1146-SNAPSHOT"]]
+                 [thi.ng/geom "0.0.1151-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.3"]]
 
