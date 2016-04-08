@@ -3,7 +3,7 @@
    [reagent.ratom :refer [reaction]]
    [cljs-log.core :refer [debug info warn severe]])
   (:require
-   [ws-ldn-6.app :as app]
+   [ws-ldn-6.webgl :as gltoy]
    [thi.ng.geom.gl.webgl.animator :as anim]
    [reagent.core :as r]
    [cljsjs.codemirror :as cm]
@@ -109,29 +109,57 @@
   (let [curr (reaction (:curr-file @app))
         body (reaction (-> @app :curr-file :body))]
     (fn []
-      [:div
-       [:h3 "Editor area " (if @curr [:small (:path @curr)])]
-       [cm-editor
-        {:on-change     update-editor-body
-         :default-value @body
-         :state         curr}
-        {:mode              (:edit-mode @curr)
-         :theme             "material"
-         :matchBrackets     true
-         :autoCloseBrackets true
-         :styleActiveLine   true
-         :lineNumbers       true
-         :autofocus         true}]])))
+      [cm-editor
+       {:on-change     update-editor-body
+        :default-value @body
+        :state         curr}
+       {:mode              (:edit-mode @curr)
+        :theme             "material"
+        :matchBrackets     true
+        :autoCloseBrackets true
+        :styleActiveLine   true
+        :lineNumbers       true
+        :autofocus         true}])))
+
+(defn gl-component
+  [props]
+  (r/create-class
+   {:component-did-mount
+    (fn [this]
+      (r/set-state this {:active true})
+      ((:init props) this)
+      (when (:redraw props)
+        (anim/animate ((:redraw props) this))))
+    :component-will-unmount
+    (fn [this]
+      (debug "unmount GL")
+      (r/set-state this {:active false}))
+    :reagent-render
+    (fn [_]
+      [:canvas
+       (merge
+        {:width (.-innerWidth js/window)
+         :height (.-innerHeight js/window)}
+        props)])}))
 
 (defn app-component
   []
   [:div.container-fluid
    [:h1 "WS-LDN-6"]
    [:div.row
-    [:div.col-md-3
+    [:div.col-md-2
      [dir-header]
      [file-list]]
-    [:div.col-md-9 [editor]]]])
+    [:div.col-md-5 [editor]]
+    [:div.col-md-5
+     [gl-component
+      {:init     (fn [this] (debug :init))
+       :redraw   (fn [this]
+                   (fn [time frame]
+                     (:active (r/state this))))
+       :width    400
+       :height   300
+       :on-click #(js/alert "bingo")}]]]])
 
 (defn mount-root
   []
