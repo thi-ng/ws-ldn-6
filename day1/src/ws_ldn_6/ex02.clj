@@ -26,9 +26,9 @@ void main() {
   gl_Position = proj * view * model * vec4(position, 1.0);
 }"
    :fs "
-out vec4 fragCol;
+out vec4 fragColor;
 void main() {
-  fragCol = vec4(1.0, 0.0, 0.0, 1.0);
+  fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }"
    :version  330
    :attribs  {:position :vec3}

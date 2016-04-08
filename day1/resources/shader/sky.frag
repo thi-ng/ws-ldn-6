@@ -41,5 +41,5 @@ void mainImage(vec2 pos, vec2 aspect) {
   coord += time * 0.1;
   float q = cloud(vec3(coord, 0.222));
   vec3 col = vec3(0.2, 0.7, 0.8) + vec3(0.2, 0.4, 0.1) * q;
-  fragCol = vec4(f2(col), 1.0);
+  fragColor = vec4(f2(col), 1.0);
 }

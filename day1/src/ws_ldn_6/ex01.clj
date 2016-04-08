@@ -154,8 +154,8 @@ void main() { gl_Position = proj * view * model * vec4(position, 1.0); }"
 
    :fs "
 #version 330
-out vec4 outCol;
-void main() { outCol = vec4(1.0, 0.0, 0.0, 1.0); }"})
+out vec4 fragColor;
+void main() { fragColor = vec4(1.0, 0.0, 0.0, 1.0); }"})
 
 (defn init
   [^GLAutoDrawable drawable]

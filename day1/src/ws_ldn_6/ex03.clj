@@ -28,9 +28,9 @@
     vUV = uv;
     gl_Position = proj * view * model * vec4(position, 1.0);
   }"
-   :fs "out vec4 fragCol;
+   :fs "out vec4 fragColor;
   void main() {
-    fragCol = texture(tex, vUV);
+    fragColor = texture(tex, vUV);
   }"
    :version  330
    :attribs  {:position :vec3

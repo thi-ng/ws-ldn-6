@@ -26,7 +26,7 @@
   {:vs fx/passthrough-vs
    :fs "
 //layout(origin_upper_left) in vec4 gl_FragCoord;
-out vec4 fragCol;
+out vec4 fragColor;
 
 {{user-code}}
 
