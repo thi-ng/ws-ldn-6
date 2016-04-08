@@ -1,0 +1,59 @@
+* WS-LDN-6
+
+Clojure/Clojurescript desktop apps w/ OpenGL + OpenCL + WebGL + Electron
+
+* Repository
+
+#+BEGIN_SRC shell
+git clone git@bitbucket.org:postspectacular/ws-ldn-6.git
+git clone https://postspectacular@bitbucket.org/postspectacular/ws-ldn-6.git
+#+END_SRC
+
+Will be moved to GitHub later...
+
+* How to run examples
+
+#+BEGIN_SRC 
+cd ws-ldn-6/day1
+
+#+END_SRC
+* Topics
+
+** Overview of thi.ng library collection
+
+** Intro to libraries used for this workshop
+
+- thi.ng/geom
+- thi.ng/shadergraph
+- thi.ng/simplecl
+- thi.ng/color
+
+** 2D/3D geometry concepts, types
+
+- vector algebra
+- matrix transformations
+- polygons
+- meshes ([un]directed graphs)
+- vertices & vertex attributes
+
+** Creating & exporting 2D/3D geometry, transformations & conversions
+** Introduction to OpenGL/WebGL/JOGL (concepts, techniques, pipelines)
+** Using thi.ng JOGL wrappers to simplify app development
+** Cameras & coordinate systems (model, view, projection, normals)
+** Intro to shaders & GLSL shading language, building simple shaders
+** Common light model calculations (Lambert, Phong, Cook-Torrance etc.)
+** Composing, embedding & minifying shaders with thi.ng/shadergraph
+** Multipass processing using GLSL & Framebuffer objects
+** Working with native data buffers (Clojure & Clojurescript)
+** Attributed meshes & working with textures
+** Building UI components with shaders
+** OpenCL introduction, concepts
+** Differences to OpenGL
+** Writing basic OpenCL kernels, data processing on the GPU
+** Working with Javascript Typed Arrays and data views
+** Unified OpenGL/WebGL API in thi.ng/geom
+** Using WebGL with Reagent (component definitions)
+** Interactions & 3D model/scene updates
+** Introduction to Electron & Clojurescript helpers 
+** Building Clojurescript for desktop apps
+** Walkthrough example app
