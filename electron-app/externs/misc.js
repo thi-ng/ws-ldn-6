@@ -22,3 +22,6 @@ electron.showOpenDialog = function() {};
 var process = {
     platform: {}
 };
+
+var CodeMirror = {};
+CodeMirror.setSize = function() {};
