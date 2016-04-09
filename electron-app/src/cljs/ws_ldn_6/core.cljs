@@ -27,14 +27,19 @@
 (defn dir-header
   []
   (let [dir (reaction (-> @state/app :dir :root))]
-    [:div "TODO header"]))
+    [:div @dir ":"]))
 
 (defn file-list
   []
-  (let [files (reaction (-> @state/app :dir :files))]
+  (let [dir   (reaction (-> @state/app :dir))
+        files (reaction (:files @dir))]
     (fn []
       (if (seq @files)
         [:ul
+         (when-not (= "./" (:root @dir))
+           [:li
+            [:span.glyphicon.glyphicon-menu-up]
+            [:a {:href "#" :on-click state/set-dir-root-parent!} " parent"]])
          (doall
           (for [{:keys [name path dir?]} @files
                 ;;:when dir?
@@ -52,6 +57,7 @@
    {:component-did-mount
     (fn [this]
       (let [editor (.fromTextArea js/CodeMirror (r/dom-node this) (clj->js cm-opts))]
+        (.setSize editor "100%" "80vh")
         (.on editor "change" #((:on-change props) (.getValue %)))
         (r/set-state this {:editor editor})))
 
@@ -73,17 +79,21 @@
   (let [curr (reaction (:curr-file @state/app))
         body (reaction (-> @state/app :curr-file :body))]
     (fn []
-      [cm-editor
-       {:on-change     state/update-editor-body
-        :default-value @body
-        :state         curr}
-       {:mode              (:edit-mode @curr)
-        :theme             "material"
-        :matchBrackets     true
-        :autoCloseBrackets true
-        :styleActiveLine   true
-        :lineNumbers       true
-        :autofocus         true}])))
+      [:div
+       [cm-editor
+        {:on-change     state/update-editor-body!
+         :default-value @body
+         :state         curr}
+        {:mode              (:edit-mode @curr)
+         :theme             "material"
+         :matchBrackets     true
+         :autoCloseBrackets true
+         :styleActiveLine   true
+         :lineNumbers       true
+         :autofocus         true}]
+       [:button.btn.btn-primary
+        {:on-click gltoy/update-shader}
+        "Compile!"]])))
 
 (defn gl-component
   [props]
@@ -106,6 +116,11 @@
          :height (.-innerHeight js/window)}
         props)])}))
 
+(defn mouse-pos
+  []
+  (let [mp (reaction (-> @state/app :webgl :mpos))]
+    (fn [] (let [[x y] @mp] [:div (int x) ";" (int y)]))))
+
 (defn app-component
   []
   [:div.container-fluid
@@ -117,17 +132,16 @@
     [:div.col-md-5 [editor]]
     [:div.col-md-5
      [gl-component
-      {:init     (fn [this] (debug :init))
-       :redraw   (fn [this]
-                   (fn [time frame]
-                     (:active (r/state this))))
+      {:init     gltoy/init
+       :redraw   gltoy/redraw
        :width    400
        :height   300
-       :on-click #(js/alert "bingo")}]]]])
+       :on-mouse-move state/set-mouse-pos!}]
+     [mouse-pos]]]])
 
 (defn mount-root
   []
-  (js/Notification. (str (js/Date.)) (clj->js {:body (str "Hello " "people")}))
+  (js/Notification. (str (js/Date.)) (clj->js {:body (str "Reloaded")}))
   (.send ipc "bounce-dock" "critical")
   (r/render-component [app-component] (.getElementById js/document "app")))
 

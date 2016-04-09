@@ -3,9 +3,10 @@
    [reagent.ratom :refer [reaction]]
    [cljs-log.core :refer [debug info warn severe]])
   (:require
-   [reagent.core :as r]))
+   [reagent.core :as r]
+   [clojure.string :as str]))
 
-(defonce app (r/atom {}))
+(defonce app (r/atom {:curr-file {:body "void mainImage(vec2 pos, vec2 aspect) {\n  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n}"}}))
 
 (def fs (js/require "fs"))
 (def ipc (.-ipcRenderer (js/require "electron")))
@@ -30,6 +31,13 @@
            (.send ipc "set-badge" (str (count files))))
          (warn err))))))
 
+(defn set-dir-root-parent!
+  []
+  (let [root (-> @app :dir :root)]
+    (when-not (= "./" root)
+      (let [parent (str/join "/" (butlast (str/split root #"/")))]
+        (set-dir-root! parent)))))
+
 (defn set-curr-file!
   [path]
   (.readFile
@@ -42,6 +50,11 @@
                           "error loading file"
                           (.toString body "utf-8"))}))))
 
-(defn update-editor-body
+(defn update-editor-body!
   [body]
   (swap! app assoc-in [:curr-file :body] body))
+
+(defn set-mouse-pos!
+  [e]
+  (let [r (.. e -target getBoundingClientRect)]
+    (swap! app assoc-in [:webgl :mpos] [(- (.-clientX e) (.-left r)) (- (.-clientY e) (.-top r))])))
