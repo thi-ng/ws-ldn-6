@@ -10,7 +10,6 @@
 
 (def fs (js/require "fs"))
 (def ipc (.-ipcRenderer (js/require "electron")))
-(def shell (js/require "shelljs"))
 
 (defn set-dir-root!
   [root]

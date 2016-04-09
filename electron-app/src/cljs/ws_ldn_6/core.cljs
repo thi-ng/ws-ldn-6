@@ -17,7 +17,6 @@
 
 (def fs (js/require "fs"))
 (def ipc (.-ipcRenderer (js/require "electron")))
-(def shell (js/require "shelljs"))
 
 (comment
   (.writeFile fs "./cljs-file-output.txt" "Hello File system!"))
